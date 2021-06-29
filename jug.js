@@ -92,14 +92,14 @@ function init() {
 
   const scene = new THREE.Scene();
 
-	var fog= new THREE.Fog(0xaaaaaa,5,100);
+	var fog= new THREE.Fog(0xffffff,5,100);
 //	scene.fog=fog;
 
     const fogFolder = gui.addFolder("Fog");
     fogFolder.add(fog, "near", 0, 100, 0.1).listen();
     fogFolder.add(fog, "far", 0, 100, 0.1).listen();
 
-  scene.background = new THREE.Color(0xaaaaaa);
+  scene.background = new THREE.Color(0xffffff);
 //  scene.background = new THREE.Color(0x333388);
 
 //---------------------------------------------------------------------------------    RADIANCE MAP
@@ -158,6 +158,8 @@ let cork, glass, water;
         const root = gltf.scene;
         root.scale.multiplyScalar(40.0);
         root.traverse((o) => {
+        o.frustumCulled=false;
+        o.receiveShadow=true;
           if (o.isMesh) {
             if (o.name === "Jug_v1003") {
               cork = o;
@@ -167,7 +169,7 @@ let cork, glass, water;
 
 //------------------------------------------------------------------------------	 GLASS
               glass = o;
-
+			
 //			glass.material.ior=1.06;
 			root.getObjectByName('water').material.ior=2;
 			root.getObjectByName('water').material.depthWrite=false;
@@ -186,6 +188,10 @@ let cork, glass, water;
             }
           }
         });
+        console.log(root);
+
+//------------------------------------------------------------------------------	 water geometry
+
 const waterGeometry = new THREE.CircleGeometry( 0.057, 64 );
 				watermat = new Water(
 					waterGeometry,
@@ -209,6 +215,8 @@ const waterGeometry = new THREE.CircleGeometry( 0.057, 64 );
 				watermat.position.set(root.getObjectByName('water').position.x,root.getObjectByName('water').position.y,root.getObjectByName('water').position.z);
 				watermat.name='watermat';
 				root.add(watermat); 
+
+//-----------------------------------------------------------------------------
         
         scene.add(root);
 			mixer = new THREE.AnimationMixer( gltf.scene );
@@ -230,13 +238,15 @@ const waterGeometry = new THREE.CircleGeometry( 0.057, 64 );
 
 
 
+
+
+//----------------------------------------------------------------------------------------- LIGHTS
+
 	var glight = new THREE.HemisphereLight(0xffffff,0xaaaaff,1);
 	scene.add(glight);
     let hemiFolder = gui.addFolder("HemiLight");
     hemiFolder.add(glight, "intensity", 0, 10, 0.1).listen();
 
-
-//----------------------------------------------------------------------------------------- LIGHTS
 
 	let L1= new THREE.RectAreaLight(0xffffff,10,10,100);
 	L1.name='L1';
@@ -276,7 +286,7 @@ const waterGeometry = new THREE.CircleGeometry( 0.057, 64 );
 	bloomPass.threshold=0.916;
 	bloomPass.radius=1.21;
 
-	composer.addPass(bloomPass);
+//	composer.addPass(bloomPass);
     const bloomFolder = gui.addFolder("Bloom");
     bloomFolder.add(bloomPass, "strength", 0, 2, 0.01).listen();
     bloomFolder.add(bloomPass, "threshold", 0.5, 1, 0.001).listen();
